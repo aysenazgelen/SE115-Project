@@ -12,7 +12,7 @@ public class ReadFromFile {
         //String filePath = sc.nextLine(); //userdan path istedik
 
         //TEST İÇİN
-        String filePath = "/Users/aysenazgelen/Desktop/map.txt";
+        String filePath = "/Users/aysenazgelen/Desktop/map2.txt";
 
         //READS THE FILE AND ASSIGNS EACH LINE TO AN ELEMENT OF A STRING ARRAY
         String[] linearr = Files.readAllLines(Paths.get(filePath)).toArray(new String[0]);
@@ -43,10 +43,13 @@ public class ReadFromFile {
             }
         }
 
+        System.out.println(Arrays.toString(linearr));
 
         //GETS NUM OF ROUTES AND ASSIGNS IT TO AN INTEGER VARIABLE
-        char[] routenumarr = linearr[2].toCharArray();
-        int routecount = Character.getNumericValue(routenumarr[0]);
+        String routec = linearr[2].trim();
+        System.out.println(routec);
+        int routecount = Integer.parseInt(routec);
+
 
 
         //GETS ROUTES
@@ -70,15 +73,11 @@ public class ReadFromFile {
 
         String[] routesSplit;
         Routes[] routes = new Routes[routesarr.length+1]; //if you want to access routes by routes[index] remove +1
-
-        for (int i = 0; i < routesarr.length; i++){
-                routesSplit = routesarr[i].split(" ");
-                Routes temproute = new Routes();
-                temproute.setCity1(routesSplit[0]);
-                temproute.setCity2(routesSplit[1]);
-                temproute.setDuration(Integer.parseInt(routesSplit[2]));
-                routes[i+1]= temproute; //if you want to access routes by routes[index] remove +1
+        for (int i = 0; i < routesarr.length; i++) {
+            routesSplit = routesarr[i].split(" ");
+            routes[i+1] = new Routes(routesSplit[0], routesSplit[1], Integer.parseInt(routesSplit[2]));
         }
+
         System.out.println(Arrays.toString(routes));
 
         System.out.println(routes[1]);
