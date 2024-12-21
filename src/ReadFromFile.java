@@ -6,22 +6,30 @@ import java.util.Arrays;
 
 public class ReadFromFile {
 
-
-
     public static void main(String[] args) throws IOException {
-        Scanner sc = new Scanner(System.in); //userdan path almak icin scanner yarattik
 
-        System.out.println("please enter the file directory: ");
-        //String filePath = sc.nextLine(); //userdan path istedik
+        //getting filepath from the the user THROUGH COMMAND LINE
+//        if (args.length < 1) {
+//            System.out.println(">> Whoopsie :( It looks like there is an issue wih your filepath. Please recompile the program and try again.");
+//            System.exit(0);
+//        }
+//        String filePath = args[0];
 
-        //TEST İÇİN
-        String filePath = "/Users/aysenazgelen/Desktop/map2.txt";
+        ///HOW TO CALL:
+        //cd IdeaProjects
+        //cd SE115-Project
+        //cd src
+        //javac ReadFromFile.java
+        //java ReadFromFile /Users/aysenazgelen/Desktop/map.txt
+
+
+        //FOR TESTING PURPOSES
+        String filePath = "/Users/aysenazgelen/Desktop/map.txt";
 
         //READS THE FILE AND ASSIGNS EACH LINE TO AN ELEMENT OF A STRING ARRAY
         String[] linearr = Files.readAllLines(Paths.get(filePath)).toArray(new String[0]);
 
-
-        //GETS THE 1ST LINE AKA NUM OF CITIES
+        //GETS THE 1ST LINE AKA NUM OF CITIES // trim vs yap
         char[] line1arr = linearr[0].toCharArray();
         int cityCount = Character.getNumericValue(line1arr[0]);
 
@@ -46,11 +54,8 @@ public class ReadFromFile {
             }
         }
 
-        System.out.println(Arrays.toString(linearr));
-
         //GETS NUM OF ROUTES AND ASSIGNS IT TO AN INTEGER VARIABLE
         String routec = linearr[2].trim();
-        System.out.println(routec);
         int routecount = Integer.parseInt(routec);
 
 
@@ -58,19 +63,11 @@ public class ReadFromFile {
         //GETS ROUTES
         String[] routesarr = new String[routecount];
         for (int i = 0; i<routecount; i++){
-            //routesarr[i] = linearray.get(i+3);
             routesarr[i] = linearr[i+3];
         }
 
         String wantedroute = linearr[linearr.length-1];
 
-
-        //print out info
-        System.out.println("num of cities is: " + cityCount);
-        System.out.println("city names are: "+ Arrays.toString(cityNamesArray));
-        System.out.println("there are " + routecount + " routes");
-        System.out.println("routes are: "+ Arrays.toString(routesarr));
-        System.out.println("wanted route is between: " + wantedroute);
 
         City[] cities = new City[cityCount];
         for (int i = 0; i < cityCount; i++) {
@@ -80,8 +77,6 @@ public class ReadFromFile {
 
 
         //SEPARATES ROUTESARR AND ASSINGS CITY NAMES AND DURATION TO ROUTES OBJECT
-
-
         CountryMap[] routes = new CountryMap[routesarr.length]; //if you want to access routes by routes[index] remove +1
         for (int i = 0; i < routesarr.length; i++) {
             String[] routeSplit = routesarr[i].split(" ");
@@ -93,65 +88,32 @@ public class ReadFromFile {
             routes[i] = new CountryMap(c1Obj, c2Obj, duration);
         }
 
-        System.out.println(Arrays.toString(routes));
-
-        System.out.println(routes[1]);
-        //ROUTES ARE ACCESSIBLE THROUGH ROUTES ARRAY just write routes[routenum] index numbers are adjusted according to that
-        System.out.println(routes[1].getCity1()); //accessing individual elements of routes
-
-        CountryMap[] reverseroutes = new CountryMap[routes.length];
-        for (int i = 0; i < routesarr.length; i++) {
-            City tempc1 = routes[i].getCity2();
-            City tempc2 = routes[i].getCity1();
-            int revduration = routes[i].getDuration();
-            reverseroutes[i]= new CountryMap(tempc1,tempc2,revduration);
-        }
-
-        System.out.println(Arrays.toString(reverseroutes));
-
-        CountryMap[] allroutes = new CountryMap[routes.length*2];
-        for (int i = 0; i < routes.length; i++) {
-            allroutes[i]=routes[i];
-        }
-        for (int i = 0; i < reverseroutes.length ; i++) {
-            allroutes[routes.length + i] = reverseroutes[i];
-        }
-
-        System.out.println(Arrays.toString(allroutes));
-
+        //ROUTE BETWEEN WHAT CITIES IS STORED IN WANTEDROUTEARR
         String[] wantedroutearr = wantedroute.split(" ");
 
-        City cityfrom = City.findCityByName(cities, wantedroutearr[0]);
-        City cityto = City.findCityByName(cities, wantedroutearr[1]);
+        //AND THEN THOSE CITIES ARE ASSIGNED TO VARIABLES STARTCITY AND ENDCITY
+        City startCity = City.findCityByName(cities, wantedroutearr[0]);
+        City endCity = City.findCityByName(cities, wantedroutearr[1]);
 
-        System.out.println("from: " + cityfrom + " to: " + cityto);
-
-        //wayfinder function
-
-        City startcity = cityfrom;
-        City endcity = new City("null");
-
-        int[] routetimecalc = new int[allroutes.length];
-        int routetime = 0;
-
-        while (!(cityto.getCityname().equals(endcity))){
-            for (int i=0; i< allroutes.length; i++){
-                if(allroutes[i].getCity1()==startcity){
-
-                    routetimecalc[i]=routetimecalc[i]+allroutes[i].getDuration();
-                    startcity = allroutes[i].getCity2();
+        //print out info
+        System.out.println(">> Yippie! Your file was read succesfully. Here is the info you have given in the file.");
+        System.out.println(">> There are " + cityCount + " cities.");
+        System.out.println(">> The name of these cities are: "+ Arrays.toString(cityNamesArray));
+        System.out.println(">> There are " + routecount + " routes.");
+        System.out.println(">> These routes are: "+ Arrays.toString(routesarr));
+        System.out.println(">> You are looking for the shortest route from: " + startCity + " to: " + endCity);
 
 
-                }
-            }
+        //calling the wayfinder function
+        int minDur = WayFinder.findShortestRoute(routes, startCity, endCity);
+        if (minDur==-1){
+            System.out.println("There are no routes between "+ startCity + " and " + endCity + ".");
+        } else {
+            System.out.println("The shortest duration from " + startCity + " to " + endCity + " is: " + minDur);
         }
-
-
-
 
 
     }
-
 
 }
 
