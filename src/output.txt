@@ -1,0 +1,7 @@
+Possible Route: A -> B -> D -> E  Duration: 65
+
+Possible Route: A -> C -> D -> E  Duration: 70
+
+Possible Route: A -> C -> E  Duration: 710
+
+The shortest duration from A to E is: 65

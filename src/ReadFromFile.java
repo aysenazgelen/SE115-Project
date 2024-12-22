@@ -1,5 +1,7 @@
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.util.Arrays;
@@ -9,11 +11,17 @@ public class ReadFromFile {
     public static void main(String[] args) throws IOException {
 
         //getting filepath from the the user THROUGH COMMAND LINE
-//        if (args.length < 1) {
-//            System.out.println(">> Whoopsie :( It looks like there is an issue wih your filepath. Please recompile the program and try again.");
-//            System.exit(0);
-//        }
-//        String filePath = args[0];
+        String filePath = null;
+        try {
+            if (args.length < 1) {
+                System.err.println(">> Whoopsie :( It looks like there is an issue with your filepath. Please provide a valid file path and try again.");
+                System.exit(1);  // Exit with a non-zero code to indicate failure
+            }
+            filePath = args[0];
+        } catch (Exception e) {
+            System.err.println("Error occurred while processing the file path: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid file path provided.");
+        }
 
         ///HOW TO CALL:
         //cd IdeaProjects
@@ -24,14 +32,14 @@ public class ReadFromFile {
 
 
         //FOR TESTING PURPOSES
-        String filePath = "/Users/aysenazgelen/Desktop/map.txt";
+        //String filePath = "/Users/aysenazgelen/Desktop/map.txt";
 
         //READS THE FILE AND ASSIGNS EACH LINE TO AN ELEMENT OF A STRING ARRAY
         String[] linearr = Files.readAllLines(Paths.get(filePath)).toArray(new String[0]);
 
         //GETS THE 1ST LINE AKA NUM OF CITIES // trim vs yap
         char[] line1arr = linearr[0].toCharArray();
-        int cityCount = Character.getNumericValue(line1arr[0]);
+        int cityCount = Integer.parseInt(linearr[0].trim());
 
         //GETS THE 2ND LINE AKA CITY NAMES
         char[] line2arr = linearr[1].toCharArray();
@@ -44,19 +52,33 @@ public class ReadFromFile {
 
         //REMOVES SPACES
         String[] cityNamesArray = new String[cityCount];
-        int k = 0;
-        for(int i = 0 ; i<cityNames.length; i++ ){
-            if (cityNames[i].equals(" ")){
+        int j = 0; //acts as a counter
+        for (int i = 0; i < cityNames.length; i++) {
+            if (cityNames[i].equals(" ")) {
                 continue;
             } else {
-                cityNamesArray[k] = cityNames[i];
-                k++;
+                if (j >= cityCount) {
+                    System.err.println(">> Whoops! You have entered more city names than the city count.");
+                    System.exit(1);
+                }
+                cityNamesArray[j] = cityNames[i];
+                j++;
             }
         }
+
+        if (j != cityCount) {
+            System.err.println(">> Whoops! There aren't enough cities compared to city count");
+            System.exit(1);
+        }
+
 
         //GETS NUM OF ROUTES AND ASSIGNS IT TO AN INTEGER VARIABLE
         String routec = linearr[2].trim();
         int routecount = Integer.parseInt(routec);
+        if (linearr.length < 3 + routecount + 1) {
+            System.err.println(">> Whoops! Route count does not match the number of given routes.");
+            System.exit(1);
+        }
 
 
 
@@ -95,6 +117,15 @@ public class ReadFromFile {
         City startCity = City.findCityByName(cities, wantedroutearr[0]);
         City endCity = City.findCityByName(cities, wantedroutearr[1]);
 
+        if (startCity == null) {
+            System.err.println(">> Start city \"" + wantedroutearr[0] + "\" does not exist.");
+            System.exit(1);
+        }
+        if (endCity == null) {
+            System.err.println(">> End city \"" + wantedroutearr[1] + "\" does not exist.");
+            System.exit(1);
+        }
+
         //print out info
         System.out.println(">> Yippie! Your file was read succesfully. Here is the info you have given in the file.");
         System.out.println(">> There are " + cityCount + " cities.");
@@ -105,12 +136,22 @@ public class ReadFromFile {
 
 
         //calling the wayfinder function
-        int minDur = WayFinder.findShortestRoute(routes, startCity, endCity);
-        if (minDur==-1){
-            System.out.println("There are no routes between "+ startCity + " and " + endCity + ".");
+        String outputFilePath = "output.txt";
+        int minDur = WayFinder.findShortestRoute(routes, startCity, endCity, outputFilePath);
+        FileWriter writer = new FileWriter(outputFilePath, true);
+
+        if (minDur == -1) {
+            System.out.println("There are no routes between " + startCity + " and " + endCity);
+            writer.write("There are no routes between " + startCity + " and " + endCity);
         } else {
-            System.out.println("The shortest duration from " + startCity + " to " + endCity + " is: " + minDur);
+            System.out.print("The shortest duration from " + startCity + " to " + endCity + " is: " + minDur);
+            writer.write("The shortest duration from " + startCity + " to " + endCity + " is: " + minDur);
         }
+
+        writer.close();
+
+
+
 
 
     }

@@ -1,46 +1,58 @@
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class WayFinder {
     private static int numofvalidroutes = 0;
     private static final int[] routeDurations = new int[100];
     private static final City[] visitedCities = new City[100];
-    private static int visitedIndex = 0; // Track the current index in visitedCities
+    private static int visitedIndex = 0;
 
-    // Helper method to find all possible routes recursively
-    private static void findAllRoutes(CountryMap[] routes, City currentCity, City endCity, int currentDuration) {
+    // finds methods recursively
+    private static void findAllRoutes(CountryMap[] routes, City currentCity, City endCity, int currentDuration, FileWriter writer) throws IOException {
         for (int i=0; i<routes.length; i++) {
             if (routes[i].getCity1() == currentCity) {
-                
-                boolean isalreadyVisited = false;
+
+                boolean alreadyVisited = false; //ziyaret etmis miydik
                 for (int j = 0; j < visitedIndex; j++) {
                     if (visitedCities[j] == routes[i].getCity2()) {
-                        isalreadyVisited = true;
+                        alreadyVisited = true;
                         break;
                     }
-                }
+                } //eger ziyaret etmşssek ziyaret edildi yapioz
 
-                if (!isalreadyVisited) {
-                    // Mark the current city as visited
+                if (!alreadyVisited) {
                     visitedCities[visitedIndex] = routes[i].getCity2();
-                    visitedIndex++;  // Increment visitedIndex before the recursive call
-                    // Recur for the next city
-                    findAllRoutes(routes, routes[i].getCity2(), endCity, currentDuration + routes[i].getDuration());
-                    // Backtrack: Unmark the city after the recursion
-                    visitedIndex--;  // Decrement visitedIndex after backtracking
+                    visitedIndex++; //backtrack
+                    findAllRoutes(routes, routes[i].getCity2(), endCity, currentDuration + routes[i].getDuration(), writer);
+                    visitedIndex--;
                 }
             }
         }
 
         //BITTIGINDE PRINTLE VE DURATIONU TUT
         if (currentCity == endCity) {
+
             //PRINT THE ROUTES
-            System.out.print("Route: ");
-            int j = 0;
+            System.out.print("Possible Route: ");
             for (int i = 0; i < visitedIndex-1; i++) {
                 System.out.print(visitedCities[i].getCityname() + " -> ");
-                j++;
             }
-            System.out.println(visitedCities[j]);
+            System.out.println(visitedCities[visitedIndex-1]);
             System.out.println("Duration: " + currentDuration);
-            // Store the route's duration
+
+            //PRINT THE ROUTES
+            StringBuilder routeBuilder = new StringBuilder();
+            routeBuilder.append("Possible Route: ");
+
+            for (int i = 0; i < visitedIndex-1; i++) {
+                routeBuilder.append(visitedCities[i].getCityname()).append(" -> ");
+            }
+            routeBuilder.append(visitedCities[visitedIndex - 1].getCityname());
+
+            writer.write(routeBuilder.toString() );
+            writer.write("  Duration: " + currentDuration + "\n\n");
+
+
             routeDurations[numofvalidroutes] = currentDuration;
             numofvalidroutes++;
 
@@ -48,19 +60,28 @@ public class WayFinder {
     }
 
     // Method to find the shortest route
-    public static int findShortestRoute(CountryMap[] routes, City startCity, City endCity) {
-        visitedCities[0] = startCity; // Start with the startCity
-        visitedIndex = 1; // Start at index 1, as the startCity is already added
+    public static int findShortestRoute(CountryMap[] routes, City startCity, City endCity, String outputFilePath) {
 
-        findAllRoutes(routes, startCity, endCity, 0);
+        visitedCities[0] = startCity;
+        visitedIndex = 1;
 
-        if (numofvalidroutes == 0) {
-            return -1; // No valid routes found
+        try (FileWriter writer = new FileWriter(outputFilePath)) {
+            findAllRoutes(routes, startCity, endCity, 0, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
         }
 
+        if (numofvalidroutes == 0) {
+            return -1; // NO ROUTES we will use this in the main function to determine the output
+        }
+
+        // FIND MIN DUR
         int minDuration = Integer.MAX_VALUE;
         for (int i = 0; i < numofvalidroutes; i++) {
-            minDuration = Math.min(minDuration, routeDurations[i]);
+            if (routeDurations[i] < minDuration) {
+                minDuration = routeDurations[i];
+            }
         }
 
         return minDuration;

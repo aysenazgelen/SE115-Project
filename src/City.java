@@ -27,7 +27,7 @@ public class City {
                 return city;
             }
         }
-        return null; // or throw an exception
+        return null;
     }
 
 }
